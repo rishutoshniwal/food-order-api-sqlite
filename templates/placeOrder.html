@@ -37,8 +37,8 @@
                 {
                     FieldCount++; //text box added increment
                     //add input box
-                    $(InputsWrapper).append( '<br><br><div class="row"><div class="form-group col-sm"><input type="text" class="form-control" name="itemno" id="itemno" required placeholder="Enter Item Id"></div><div class="form-group col-sm"><input type="text" class="form-control" name="platetype" id="platetype" required placeholder="Enter Plate type (half/full)"></div><div class="form-group col-sm"><input type="text" class="form-control" name="quantity" id="quantity" required placeholder="Enter Quantity"></div></div>');
-                    x++; //text box increment
+                    $(InputsWrapper).append( '<br><br><div class="row"><div class="form-group col-sm"><input type="text" class="form-control" name="itemno[]" id="itemno" required placeholder="Enter Item Id"></div><div class="form-group col-sm"><input type="text" class="form-control" name="platetype[]" id="platetype" required placeholder="Enter Plate type (half/full)"></div><div class="form-group col-sm"><input type="text" class="form-control" name="quantity[]" id="quantity" required placeholder="Enter Quantity"></div></div>');
+                    
                 }
                 return false;
             });
@@ -88,19 +88,19 @@
                
                 <div class="form-group col-sm">
                    
-                    <input type="text" class="form-control" name="itemno" id="itemno" required placeholder="Enter Item Id">
+                    <input type="text" class="form-control" name="itemno[]" id="itemno" required placeholder="Enter Item Id">
 
                 </div>
 
                 <div class="form-group col-sm">
                    
-                    <input type="text" class="form-control" name="platetype" id="platetype" required placeholder="Enter Plate type (half/full)">
+                    <input type="text" class="form-control" name="platetype[]" id="platetype" required placeholder="Enter Plate type (half/full)">
 
                 </div>
 
                 <div class="form-group col-sm">
                    
-                    <input type="text" class="form-control" name="quantity" id="quantity" required placeholder="Enter Quantity">
+                    <input type="text" class="form-control" name="quantity[]" id="quantity" required placeholder="Enter Quantity">
 
                 </div>
 

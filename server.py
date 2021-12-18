@@ -92,9 +92,8 @@ def login():
 
 @app.route('/logout', methods =['GET', 'POST'])	
 def logout():
-    session.pop('loggedin',None)
-    session.pop('id',None)
-    session.pop('username',None)
+    global loggedin
+    global loggedinUserName
     loggedin=False
     loggedinUserName=''
     return render_template("logout.html") 	
@@ -214,36 +213,47 @@ def ordermap():
 
 @app.route('/insert_order', methods =['GET', 'POST'])	
 def insert_order():
+    global loggedin
+    if loggedin==False:
+        return "You need to login first"
+        
     if request.method=="POST":
-       
+        
         data = request.form
         # data = request.get_json()
         global loggedinUserName
         orderid=int(ordermap())
-        itemno=int(data['itemno'])
-        platetype=data['platetype']
-        quantity=int(data['quantity'])
-        costPerUnit=db.execute("select fullplate from menu where itemno=:itemno",{"itemno":itemno}).fetchone()
-        if(platetype=="half"):
-            costPerUnit=db.execute("select halfplate from menu where itemno=:itemno",{"itemno":itemno}).fetchone()
 
-        total=0
-        for c in costPerUnit:
-            total=c*quantity
-        check=db.execute("select quantity,total from transaction where (orderid=:orderid and itemno=:itemno and platetype=:platetype)",{"orderid":orderid,"itemno":itemno,"platetype":platetype}).fetchone()
-        
-        if check is None :
-            db.execute("INSERT INTO transaction(orderid,itemno,platetype,quantity,total) VALUES(:orderid,:itemno,:platetype,:quantity,:total)",{"orderid":orderid,"itemno":itemno,"platetype":platetype,"quantity":quantity,"total":total})
-            db.commit()	 
-        else :
-            db.execute("delete from transaction where (orderid=:orderid and itemno=:itemno and platetype=:platetype)",{"orderid":orderid,"itemno":itemno,"platetype":platetype})
-            db.commit()
-            # for c in check:
-            quantity=quantity+check['quantity']
-            total=total+check['total']
-                
-            db.execute("INSERT INTO transaction(orderid,itemno,platetype,quantity,total) VALUES(:orderid,:itemno,:platetype,:quantity,:total)",{"orderid":orderid,"itemno":itemno,"platetype":platetype,"quantity":quantity,"total":total})
-            db.commit()	    
+        itemnoList=data.getlist('itemno[]')
+        platetypeList=data.getlist('platetype[]')
+        quantityList=data.getlist('quantity[]')
+        length=len(itemnoList)
+        print(length)
+        for i in range(length):
+            itemno=int(itemnoList[i])
+            platetype=platetypeList[i]
+            quantity=int(quantityList[i])
+            costPerUnit=db.execute("select fullplate from menu where itemno=:itemno",{"itemno":itemno}).fetchone()
+            if(platetype=="half"):
+                costPerUnit=db.execute("select halfplate from menu where itemno=:itemno",{"itemno":itemno}).fetchone()
+
+            total=0
+            for c in costPerUnit:
+                total=c*quantity
+            check=db.execute("select quantity,total from transaction where (orderid=:orderid and itemno=:itemno and platetype=:platetype)",{"orderid":orderid,"itemno":itemno,"platetype":platetype}).fetchone()
+            
+            if check is None :
+                db.execute("INSERT INTO transaction(orderid,itemno,platetype,quantity,total) VALUES(:orderid,:itemno,:platetype,:quantity,:total)",{"orderid":orderid,"itemno":itemno,"platetype":platetype,"quantity":quantity,"total":total})
+                db.commit()	 
+            else :
+                db.execute("delete from transaction where (orderid=:orderid and itemno=:itemno and platetype=:platetype)",{"orderid":orderid,"itemno":itemno,"platetype":platetype})
+                db.commit()
+                # for c in check:
+                quantity=quantity+check['quantity']
+                total=total+check['total']
+                    
+                db.execute("INSERT INTO transaction(orderid,itemno,platetype,quantity,total) VALUES(:orderid,:itemno,:platetype,:quantity,:total)",{"orderid":orderid,"itemno":itemno,"platetype":platetype,"quantity":quantity,"total":total})
+                db.commit()	    
 
         return "Order succesfully taken"
     return render_template("placeOrder.html")
