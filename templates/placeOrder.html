@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" />
+
+
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script> -->
+
+    <!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script> -->
+
+    <title>Document</title>
+</head>
+
+<body>
+
+    <script>
+        $(document).ready(function () {
+
+            var MaxInputs = 20; //maximum input boxes allowed
+            var InputsWrapper = $("#InputsWrapper"); //Input boxes wrapper ID
+            var AddButton = $("#AddMoreFileBox"); //Add button ID
+
+            var x = InputsWrapper.length; //initlal text box count
+            var FieldCount = 1; //to keep track of text box added
+
+            $(AddButton).click(function (e)  //on add input button click
+            {
+                if (x <= MaxInputs) //max input box allowed
+                {
+                    FieldCount++; //text box added increment
+                    //add input box
+                    $(InputsWrapper).append( '<br><br><div class="row"><div class="form-group col-sm"><input type="text" class="form-control" name="itemno" id="itemno" required placeholder="Enter Item Id"></div><div class="form-group col-sm"><input type="text" class="form-control" name="platetype" id="platetype" required placeholder="Enter Plate type (half/full)"></div><div class="form-group col-sm"><input type="text" class="form-control" name="quantity" id="quantity" required placeholder="Enter Quantity"></div></div>');
+                    x++; //text box increment
+                }
+                return false;
+            });
+
+            $("body").on("click", ".removeclass", function (e) { //user click on remove text
+                if (x > 1) {
+                    $(this).parent('div').remove(); //remove text box
+                    x--; //decrement textbox
+                }
+                return false;
+            })
+        });
+    </script>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">Navbar</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
+            aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div class="navbar-nav">
+                <a class="nav-item nav-link active" href="#">Home <span class="sr-only">(current)</span></a>
+                <a class="nav-item nav-link" href="/register">Register</a>
+                <a class="nav-item nav-link" href="/login">Login</a>
+                <a class="nav-item nav-link" href="/show_menu">Show Menu</a>
+                <a class="nav-item nav-link" href="/insert_order">Place Order</a>
+                <a class="nav-item nav-link" href="/logout">Logout</a>
+
+            </div>
+        </div>
+    </nav>
+
+
+    <div class="container">
+        <form action="" method="POST">
+            
+            <br><br>
+            <div id="InputsWrapper" >
+            
+                <button type="button" name="add" id="AddMoreFileBox"
+                class="btn btn-sm btn-success mx-1">Want to order more items, Click here</button>
+             </div>
+
+             <br> 
+            <div class="row">
+               
+                <div class="form-group col-sm">
+                   
+                    <input type="text" class="form-control" name="itemno" id="itemno" required placeholder="Enter Item Id">
+
+                </div>
+
+                <div class="form-group col-sm">
+                   
+                    <input type="text" class="form-control" name="platetype" id="platetype" required placeholder="Enter Plate type (half/full)">
+
+                </div>
+
+                <div class="form-group col-sm">
+                   
+                    <input type="text" class="form-control" name="quantity" id="quantity" required placeholder="Enter Quantity">
+
+                </div>
+
+
+            </div>
+
+            <button type="submit" class="btn btn-outline-dark btn-sm mx-1">Submit</button>
+        </form>
+    </div>
+</body>
+
+</html>
