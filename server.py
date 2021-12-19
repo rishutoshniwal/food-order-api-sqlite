@@ -159,43 +159,28 @@ def insert_menu():
     return "Item inserted in menu successfully"
     
 
-@app.route('/fetch_that_bill', methods =['GET', 'POST'])	
-def fetch_that_bill(): 
-     data = request.get_json()
-     username=data['username']
-     orderid=data['orderid']
+@app.route('/fetch_that_bill/<orderid>/<username>', methods =['GET', 'POST'])	
+def fetch_that_bill(orderid,username): 
+    #  data = request.get_json()
+    #  username=data['username']
+    #  orderid=data['orderid']
      check=db.execute("SELECT tip from ordermap WHERE (orderid=:orderid and username=:username)",{"orderid":orderid,"username":username}).fetchone()
-     tip=0
-     for c in check:
-         tip=c
+     tip=check['tip']
      check=db.execute("SELECT people from ordermap WHERE (orderid=:orderid and username=:username)",{"orderid":orderid,"username":username}).fetchone()
-     people=1
-     for c in check:
-         people=c    
+     people=check['people']  
      check=db.execute("SELECT discount from ordermap WHERE (orderid=:orderid and username=:username)",{"orderid":orderid,"username":username}).fetchone()
-     discount=0
-     for c in check:
-         discount=c      
-     
-     out=""
-     check=db.execute("SELECT itemno,platetype,quantity,total from transaction WHERE orderid=:orderid",{"orderid":orderid}).fetchall()
-     for c in check:
-         out=out+"item "+str(c['itemno'])+" ["+str(c['platetype'])+"] ["+str(c['quantity'])+"] : "+str(c['total'])+"\n"
-     check=db.execute("SELECT sum(total) from transaction WHERE orderid=:orderid",{"orderid":orderid}).fetchall()
-     val=0
-     for c in check:
-         val=int(c['sum(total)'])
-         out=out+"total_cost_of_all_items : "+str(c['sum(total)'])+"\n"
-     out=out+"Tip percentage : "+str(tip)+"\n" 
-     out=out+"Discount/Increase : "+str(discount)+"\n"
+     discount=check['discount'] 
+     check=db.execute("SELECT sum(total) from transaction WHERE orderid=:orderid",{"orderid":orderid}).fetchone()
+     subtotal=check['sum(total)']  
+     orderlist=db.execute("SELECT itemno,platetype,quantity,total from transaction WHERE orderid=:orderid",{"orderid":orderid}).fetchall()
+    
+     val=float(subtotal)* ((100 + float(tip) )/100) * ((100 + float(discount) )/100)
+     total=str('%.2f'%val)
+     val=val/people
+     sharePerHead=str('%.2f'%val)
+    
 
-     val=(val* (100+tip)/100) *((100+discount)/100)
-     out=out+"Final total_cost_of_all_items : "+str(val)+"\n"
-     out=out+"Count of people who shares bill : "+str(people)+"\n"
-     share=val/people
-     out=out+"Updated amount_with_tip to be paid per menu_head : "+str(share)
-
-     return out
+     return render_template('bill.html',orderid=orderid,username=username,tip=tip,people=people,subtotal=subtotal,discount=discount,orderlist=orderlist,total=total,sharePerHead=sharePerHead)
        
     
 
@@ -220,7 +205,6 @@ def insert_order():
     if request.method=="POST":
         
         data = request.form
-        # data = request.get_json()
         global loggedinUserName
         orderid=int(ordermap())
 
@@ -253,9 +237,21 @@ def insert_order():
                 total=total+check['total']
                     
                 db.execute("INSERT INTO transaction(orderid,itemno,platetype,quantity,total) VALUES(:orderid,:itemno,:platetype,:quantity,:total)",{"orderid":orderid,"itemno":itemno,"platetype":platetype,"quantity":quantity,"total":total})
-                db.commit()	    
+                db.commit()	 
+            username=loggedinUserName    
+            tip=data['tip']
+            people=data['people']
+            discount=0
+            if data['play_luck_game']=="yes":
+                arr_of_luck=[-50,-25,-25,-10,-10,-10,0,0,0,0,20,20,20,20,20,20,20,20,20,20]
+                index=random.randint(0,19)
+                discount=arr_of_luck[index]
 
-        return "Order succesfully taken"
+            db.execute("Update ordermap set tip=:tip,people=:people,discount=:discount WHERE (username=:username and orderid=:orderid)"
+            ,{"username":username,"orderid":orderid,"tip":tip,"people":people,"discount":discount})
+            db.commit()	       
+
+        return redirect(url_for("fetch_that_bill",orderid=orderid,username=username))
     return render_template("placeOrder.html")
 
 if __name__ == '__main__':

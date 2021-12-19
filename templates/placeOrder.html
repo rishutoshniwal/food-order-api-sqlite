@@ -37,19 +37,13 @@
                 {
                     FieldCount++; //text box added increment
                     //add input box
-                    $(InputsWrapper).append( '<br><br><div class="row"><div class="form-group col-sm"><input type="text" class="form-control" name="itemno[]" id="itemno" required placeholder="Enter Item Id"></div><div class="form-group col-sm"><input type="text" class="form-control" name="platetype[]" id="platetype" required placeholder="Enter Plate type (half/full)"></div><div class="form-group col-sm"><input type="text" class="form-control" name="quantity[]" id="quantity" required placeholder="Enter Quantity"></div></div>');
-                    
+                    $(InputsWrapper).append('<div class="row"><div class="form-group col-sm"><br><input type="text" class="form-control" name="itemno[]" id="itemno" required placeholder="Enter Item Id"></div><div class="form-group col-sm"><br><input type="text" class="form-control" name="platetype[]" id="platetype" required placeholder="Enter Plate type (half/full)"></div><div class="form-group col-sm"><br><input type="text" class="form-control" name="quantity[]" id="quantity" required placeholder="Enter Quantity"></div><div class="form-group col-sm"><br><button type="button" class="btn btn-danger" onclick="return this.parentNode.parentNode.remove();" class="remove">Cancel Item</button></div></div>');
+
                 }
                 return false;
             });
 
-            $("body").on("click", ".removeclass", function (e) { //user click on remove text
-                if (x > 1) {
-                    $(this).parent('div').remove(); //remove text box
-                    x--; //decrement textbox
-                }
-                return false;
-            })
+
         });
     </script>
 
@@ -75,37 +69,76 @@
 
     <div class="container">
         <form action="" method="POST">
-            
+
             <br><br>
-            <div id="InputsWrapper" >
-            
-                <button type="button" name="add" id="AddMoreFileBox"
-                class="btn btn-sm btn-success mx-1">Want to order more items, Click here</button>
-             </div>
+            <div id="InputsWrapper">
 
-             <br> 
+                <button type="button" name="add" id="AddMoreFileBox" class="btn btn-sm btn-success mx-1 mx-y1">Want to
+                    order more items, Click here</button>
+                <br>
+            </div>
+
+            <br>
             <div class="row">
-               
+
                 <div class="form-group col-sm">
-                   
-                    <input type="text" class="form-control" name="itemno[]" id="itemno" required placeholder="Enter Item Id">
+
+                    <input type="text" class="form-control" name="itemno[]" id="itemno" required
+                        placeholder="Enter Item Id">
 
                 </div>
 
                 <div class="form-group col-sm">
-                   
-                    <input type="text" class="form-control" name="platetype[]" id="platetype" required placeholder="Enter Plate type (half/full)">
+
+                    <input type="text" class="form-control" name="platetype[]" id="platetype" required
+                        placeholder="Enter Plate type (half/full)">
 
                 </div>
 
                 <div class="form-group col-sm">
-                   
-                    <input type="text" class="form-control" name="quantity[]" id="quantity" required placeholder="Enter Quantity">
+
+                    <input type="text" class="form-control" name="quantity[]" id="quantity" required
+                        placeholder="Enter Quantity">
 
                 </div>
 
+                <div class="form-group col-sm"></div>
 
             </div>
+
+            <div class="row">
+                <div class="form-group col-sm">
+                    <input name="tip" class="form-control" type="number" placeholder="Tip in percentage(0-100)" min="0"
+                        max="100">
+                </div>
+                <div class="form-group col-sm">
+                    <input name="people" class="form-control" type="number" placeholder="Number of people to split bill"
+                        min="1">
+                </div>
+                <div class="form-group col-sm"> </div>
+                <div class="form-group col-sm"></div>
+
+            </div>
+
+
+            <div class="row">
+                <div class="input_field radio_option form-group col-sm">
+                    <p>In our restaurant, we have a luck based discount game whose rules are as follows : </p>
+                    <ul>
+                        <li>There’s a 5% chance to get a 50% discount off the total bill</li>
+                        <li>10% chance to get 25% discount</li>
+                        <li>15% chance to get 10% discount</li>
+                        <li>20% chance to get no discount</li>
+                        <li>50% chance that the total amount increases by 20%</li>
+                    </ul>
+                    <p> Do you want to play luck based discount game? </p>
+                    <input type="radio" name="play_luck_game" value="no" id="rd1" checked>
+                    <label for="rd1">No</label>
+                    <input type="radio" name="play_luck_game" value="yes" id="rd2">
+                    <label for="rd2">Yes</label>
+                </div>
+            </div>
+
 
             <button type="submit" class="btn btn-outline-dark btn-sm mx-1">Submit</button>
         </form>
