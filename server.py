@@ -177,14 +177,38 @@ def previous_order():
 
 @app.route('/insert_menu', methods =['GET', 'POST'])	
 def insert_menu():  
-    data = request.get_json()
-    itemno=data['itemno']
-    halfplate=data['halfplate']
-    fullplate=data['fullplate']
-    db.execute("INSERT INTO menu(itemno,halfplate,fullplate) VALUES(:itemno,:halfplate,:fullplate)",
-            {"itemno":itemno,"halfplate":halfplate,"fullplate":fullplate})
-    db.commit()
-    return "Item inserted in menu successfully"
+    global loggedin
+    if loggedin==False:
+        message=[]
+        message.append("You need to login first")
+        return redirect(url_for('login',message=message))
+    global loggedinUserName
+    username=loggedinUserName
+    check=db.execute("SELECT usertype from users WHERE username=:username",{"username":username}).fetchone()
+    if check['usertype']=="customer":
+        message=[]
+        message.append("Only chefs are allowed to perform this operation")
+        return redirect(url_for('index',message=message))
+
+    if request.method=="POST":
+        data = request.form
+        itemnoList=data.getlist('itemno[]')
+        halfplateList=data.getlist('halfplate[]')
+        fullplateList=data.getlist('fullplate[]')
+        length=len(itemnoList)
+        for i in range(length):
+            itemno=int(itemnoList[i])
+            halfplate=int(halfplateList[i])
+            fullplate=int(fullplateList[i])
+            
+            db.execute("INSERT INTO menu(itemno,halfplate,fullplate) VALUES(:itemno,:halfplate,:fullplate)",
+                    {"itemno":itemno,"halfplate":halfplate,"fullplate":fullplate})
+            db.commit()
+        message=[]
+        message.append("Item added to menu succesfully")
+        return render_template("add_items_to_menu.html",message=message)
+
+    return render_template("add_items_to_menu.html")
     
 
 @app.route('/fetch_that_bill/<orderid>/<username>', methods =['GET', 'POST'])	
