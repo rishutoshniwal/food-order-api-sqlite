@@ -28,16 +28,15 @@ for c in start:
 def index():
     return render_template("index.html")
 
-# @app.route('/user', methods=['GET','POST'])         
-# def user():
-#     data = request.get_json()
-#     if session['username']==data['username']:
-#         return True
-#     else :
-#         return False
+
              
 @app.route('/register', methods = [ 'GET','POST'])
 def register():
+    global loggedin
+    if loggedin==True:
+        message=[]
+        message.append("A new user can login only when current user logout")
+        return redirect(url_for('index',message=message))
     if request.method=="POST":
         data = request.form
         username = data['username']
@@ -47,17 +46,26 @@ def register():
             
         
         if check!=None:
-            return "User with same username is already Registered"
+            message=[]
+            message.append("You are already registered, you can login with your credentials")
+            return redirect(url_for('login',message=message))
+
         db.execute("INSERT INTO users(username,password,usertype) VALUES(:username,:pass1,:type1)",
                 {"username":username,"pass1":pass1,"type1":type1})
         db.commit()
     
-
-        return redirect(url_for('login'))
+        message=[]
+        message.append("New user registered succesfully")
+        return redirect(url_for('login',message=message))
     return render_template("register.html")    
 
 @app.route('/login', methods =['GET', 'POST'])
 def login():
+    global loggedin
+    if loggedin==True:
+        message=[]
+        message.append("You are already logged in")
+        return redirect(url_for('index',message=message))
     if request.method=="POST":
         data = request.form
         username = data['username']
@@ -66,10 +74,12 @@ def login():
 
         check=db.execute("SELECT * from users WHERE username=:username",{"username":username}).fetchone()
         
-        
+       
 
         if check is None :
-            return "User does not exist"
+            message=[]
+            message.append("User does not exist,you need to register first")
+            return redirect(url_for('register',message=message))
     
         else:
             currentLoginUserType=check['usertype']
@@ -79,63 +89,81 @@ def login():
                 session['id']=check['username']
                 session['username']=check['username']
                 global loggedinUserName
-                global loggedin
+                
                 loggedin=True
                 loggedinUserName=check['username']
                 if(currentLoginUserType=="chef"):
-                    return "Chef , Successfully Logged in"
-                else :    
-                    return "Customer , Successfully Logged in"
+                    message=[]
+                    message.append("Chef , Successfully Logged in")
+                    return redirect(url_for('index',message=message))
+                else :  
+                   message=[]   
+                   message.append("Customer , Successfully Logged in")
+                   return redirect(url_for('index',message=message))
             else:
-                return "Wrong Password"
+                message=[]
+                message.append("Wrong Password")
+                return redirect(url_for('login',message=message))
     return render_template("login.html")        
 
 @app.route('/logout', methods =['GET', 'POST'])	
 def logout():
     global loggedin
     global loggedinUserName
-    loggedin=False
-    loggedinUserName=''
-    return render_template("logout.html") 	
+    if loggedin==False:
+         message=[]
+         message.append("User already logged out, login again to perform any action")
+         return redirect(url_for('login',message=message))
+    else:  
+        loggedin=False
+        loggedinUserName=''
+        message=[]
+        message.append("Logout successfull")
+        return redirect(url_for('login',message=message))	
 
 @app.route('/show_menu', methods =['GET', 'POST'])	
 def show_menu():
+    global loggedin
+    if loggedin==False:
+        message=[]
+        message.append("You need to login first")
+        return redirect(url_for('login',message=message))
     
     # res="itemno"+"\t\t"+"halfplate"+"\t\t"+"fullplate\n"
     menu=db.execute("SELECT * from menu").fetchall()
     return render_template("show_menu.html",menu=menu)
     
-@app.route('/getotherdetails', methods =['GET', 'POST'])	
-def getotherdetails():
-    data = request.get_json()
-    username=data['username']
-    orderid=data['orderid']
-    tip=data['tip']
-    people=data['people']
-    discount=data['discount']
-    db.execute("Update ordermap set tip=:tip,people=:people,discount=:discount WHERE (username=:username and orderid=:orderid)"
-    ,{"username":username,"orderid":orderid,"tip":tip,"people":people,"discount":discount})
-    db.commit()	
+# @app.route('/getotherdetails', methods =['GET', 'POST'])	
+# def getotherdetails():
+#     data = request.get_json()
+#     username=data['username']
+#     orderid=data['orderid']
+#     tip=data['tip']
+#     people=data['people']
+#     discount=data['discount']
+#     db.execute("Update ordermap set tip=:tip,people=:people,discount=:discount WHERE (username=:username and orderid=:orderid)"
+#     ,{"username":username,"orderid":orderid,"tip":tip,"people":people,"discount":discount})
+#     db.commit()	
 
-    out=""
-    check=db.execute("SELECT itemno,platetype,quantity,total from transaction WHERE orderid=:orderid",{"orderid":orderid}).fetchall()
-    for c in check:
-        out=out+"item "+str(c['itemno'])+" ["+str(c['platetype'])+"] ["+str(c['quantity'])+"] : "+str(c['total'])+"\n"
-    check=db.execute("SELECT sum(total) from transaction WHERE orderid=:orderid",{"orderid":orderid}).fetchall()
-    val=0
-    for c in check:
-        val=int(c['sum(total)'])
-        out=out+"total_cost_of_all_items : "+str(c['sum(total)'])+"\n"
-    out=out+"Tip percentage : "+str(tip)+"\n" 
-    out=out+"Discount/Increase : "+str(discount)+"\n"
+#     out=""
+#     check=db.execute("SELECT itemno,platetype,quantity,total from transaction WHERE orderid=:orderid",{"orderid":orderid}).fetchall()
+#     for c in check:
+#         out=out+"item "+str(c['itemno'])+" ["+str(c['platetype'])+"] ["+str(c['quantity'])+"] : "+str(c['total'])+"\n"
+#     check=db.execute("SELECT sum(total) from transaction WHERE orderid=:orderid",{"orderid":orderid}).fetchall()
+#     val=0
+#     for c in check:
+#         val=int(c['sum(total)'])
+#         out=out+"total_cost_of_all_items : "+str(c['sum(total)'])+"\n"
+#     out=out+"Tip percentage : "+str(tip)+"\n" 
+#     out=out+"Discount/Increase : "+str(discount)+"\n"
 
-    val=(val* (100+tip)/100) *((100+discount)/100)
-    out=out+"Final total_cost_of_all_items : "+str('%.2f'%val)+"\n"
-    out=out+"Count of people who shares bill : "+str(people)+"\n"
-    share=val/people
-    out=out+"Updated amount_with_tip to be paid per menu_head : "+str('%.2f'%share)
+#     val=(val* (100+tip)/100) *((100+discount)/100)
+#     out=out+"Final total_cost_of_all_items : "+str('%.2f'%val)+"\n"
+#     out=out+"Count of people who shares bill : "+str(people)+"\n"
+#     share=val/people
+#     out=out+"Updated amount_with_tip to be paid per menu_head : "+str('%.2f'%share)
 
-    return out
+#     return out
 
 @app.route('/previous_order', methods =['GET', 'POST'])	
 def previous_order():
@@ -200,7 +228,9 @@ def ordermap():
 def insert_order():
     global loggedin
     if loggedin==False:
-        return "You need to login first"
+        message=[]
+        message.append("You need to login first")
+        return redirect(url_for('login',message=message))
         
     if request.method=="POST":
         
