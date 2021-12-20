@@ -133,47 +133,19 @@ def show_menu():
     menu=db.execute("SELECT * from menu").fetchall()
     return render_template("show_menu.html",menu=menu)
     
-# @app.route('/getotherdetails', methods =['GET', 'POST'])	
-# def getotherdetails():
-#     data = request.get_json()
-#     username=data['username']
-#     orderid=data['orderid']
-#     tip=data['tip']
-#     people=data['people']
-#     discount=data['discount']
-#     db.execute("Update ordermap set tip=:tip,people=:people,discount=:discount WHERE (username=:username and orderid=:orderid)"
-#     ,{"username":username,"orderid":orderid,"tip":tip,"people":people,"discount":discount})
-#     db.commit()	
 
-#     out=""
-#     check=db.execute("SELECT itemno,platetype,quantity,total from transaction WHERE orderid=:orderid",{"orderid":orderid}).fetchall()
-#     for c in check:
-#         out=out+"item "+str(c['itemno'])+" ["+str(c['platetype'])+"] ["+str(c['quantity'])+"] : "+str(c['total'])+"\n"
-#     check=db.execute("SELECT sum(total) from transaction WHERE orderid=:orderid",{"orderid":orderid}).fetchall()
-#     val=0
-#     for c in check:
-#         val=int(c['sum(total)'])
-#         out=out+"total_cost_of_all_items : "+str(c['sum(total)'])+"\n"
-#     out=out+"Tip percentage : "+str(tip)+"\n" 
-#     out=out+"Discount/Increase : "+str(discount)+"\n"
-
-#     val=(val* (100+tip)/100) *((100+discount)/100)
-#     out=out+"Final total_cost_of_all_items : "+str('%.2f'%val)+"\n"
-#     out=out+"Count of people who shares bill : "+str(people)+"\n"
-#     share=val/people
-#     out=out+"Updated amount_with_tip to be paid per menu_head : "+str('%.2f'%share)
-
-#     return out
 
 @app.route('/previous_order', methods =['GET', 'POST'])	
 def previous_order():
-    data = request.get_json()
-    username = data['username']
-    check=db.execute("SELECT orderid from ordermap WHERE username=:username",{"username":username}).fetchall()
-    res="Your order ids are : \n"
-    for c in check:
-        res=res+"Order id : "+str(c['orderid'])+"\n"
-    return res
+    global loggedin
+    if loggedin==False:
+        message=[]
+        message.append("You need to login first")
+        return redirect(url_for('login',message=message))
+    global loggedinUserName
+    username=loggedinUserName
+    orderlist=db.execute("SELECT orderid from ordermap WHERE username=:username",{"username":username}).fetchall()
+    return render_template("previous_orders.html",orderlist=orderlist,username=username)
 
 @app.route('/insert_menu', methods =['GET', 'POST'])	
 def insert_menu():  
@@ -200,9 +172,15 @@ def insert_menu():
             itemno=int(itemnoList[i])
             halfplate=int(halfplateList[i])
             fullplate=int(fullplateList[i])
+
+            check=db.execute("SELECT * from menu WHERE itemno=:itemno",{"itemno":itemno}).fetchone()
+            if check!=None:
+                db.execute("Update menu set halfplate=:halfplate,fullplate=:fullplate WHERE itemno=:itemno"
+            ,{"itemno":itemno,"halfplate":halfplate,"fullplate":fullplate})
             
-            db.execute("INSERT INTO menu(itemno,halfplate,fullplate) VALUES(:itemno,:halfplate,:fullplate)",
-                    {"itemno":itemno,"halfplate":halfplate,"fullplate":fullplate})
+            else:
+                db.execute("INSERT INTO menu(itemno,halfplate,fullplate) VALUES(:itemno,:halfplate,:fullplate)",
+                        {"itemno":itemno,"halfplate":halfplate,"fullplate":fullplate})
             db.commit()
         message=[]
         message.append("Item added to menu succesfully")
@@ -213,9 +191,7 @@ def insert_menu():
 
 @app.route('/fetch_that_bill/<orderid>/<username>', methods =['GET', 'POST'])	
 def fetch_that_bill(orderid,username): 
-    #  data = request.get_json()
-    #  username=data['username']
-    #  orderid=data['orderid']
+    
      check=db.execute("SELECT tip from ordermap WHERE (orderid=:orderid and username=:username)",{"orderid":orderid,"username":username}).fetchone()
      tip=check['tip']
      check=db.execute("SELECT people from ordermap WHERE (orderid=:orderid and username=:username)",{"orderid":orderid,"username":username}).fetchone()
@@ -240,7 +216,7 @@ def fetch_that_bill(orderid,username):
 def ordermap():
     global i
     i=i+1
-    # data = request.get_json()
+    
     global loggedinUserName
     username = loggedinUserName
     db.execute("INSERT INTO ordermap(username,orderid) VALUES(:username,:orderid)",{"username":username,"orderid":i})
