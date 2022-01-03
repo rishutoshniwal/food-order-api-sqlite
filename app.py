@@ -219,8 +219,23 @@ def insert_menu():
 
 @app.route('/fetch_that_bill/<orderid>/<username>', methods =['GET', 'POST'])	
 def fetch_that_bill(orderid,username): 
+    if current_user.is_authenticated==False:
+        message=[]
+        message.append("You need to login first")
+        return redirect(url_for('login',message=message))
+
     
+    
+    currentLoginUsername=current_user.get_id()
+    if username!=currentLoginUsername:
+        message=[]
+        message.append("You can not see other users' bill ")
+        return redirect(url_for('login',message=message))
+
+    
+
     check=Ordermap.query.filter_by(orderid=orderid ,username=username).first()
+
     tip=check.tip
     people=check.people  
     discount=check.discount
